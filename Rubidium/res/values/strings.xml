@@ -2,9 +2,9 @@
 <resources>
 
     <string name="app_name">Rubidium Grocery List App</string>
-    <string name="title_section1">Grocery List</string>
-    <string name="title_section2">Section 2</string>
-    <string name="title_section3">Section 3</string>
+    <string name="title_section1">Go Shopping</string>
+    <string name="title_section2">Make Grocery List</string>
+    <string name="title_section3">Item List</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="action_example">Example action</string>

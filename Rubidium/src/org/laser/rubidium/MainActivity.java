@@ -1,96 +1,113 @@
 package org.laser.rubidium;
 
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
-import android.support.v4.app.FragmentManager;
+import org.laser.rubidium.fragments.RubidiumFragment;
+import org.laser.rubidium.fragments.ShoppingListFragment;
+
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v4.widget.DrawerLayout;
 
-public class MainActivity extends ActionBarActivity implements
-		NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainActivity extends ActionBarActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
 	/**
-	 * Fragment managing the behaviors, interactions and presentation of the
-	 * navigation drawer.
+	 * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
 	 */
 	private NavigationDrawerFragment mNavigationDrawerFragment;
 
 	/**
-	 * Used to store the last screen title. For use in
-	 * {@link #restoreActionBar()}.
+	 * Used to store the last screen title. For use in {@link #restoreActionBar()}.
 	 */
 	private CharSequence mTitle;
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
+		this.setContentView(R.layout.activity_main);
 
-		mNavigationDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager()
-				.findFragmentById(R.id.navigation_drawer);
-		mTitle = getTitle();
+		this.mNavigationDrawerFragment = (NavigationDrawerFragment) this.getSupportFragmentManager().findFragmentById(
+				R.id.navigation_drawer);
+		this.mTitle = this.getTitle();
 
 		// Set up the drawer.
-		mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
-				(DrawerLayout) findViewById(R.id.drawer_layout));
+		this.mNavigationDrawerFragment.setUp(R.id.navigation_drawer,
+				(DrawerLayout) this.findViewById(R.id.drawer_layout));
 	}
 
 	@Override
-	public void onNavigationDrawerItemSelected(int position) {
-		// update the main content by replacing fragments
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		fragmentManager
-				.beginTransaction()
-				.replace(R.id.container,
-						RubidiumFragment.newInstance(position + 1)).commit();
-	}
-
-	public void onSectionAttached(int number) {
-		switch (number) {
-		case 1:
-			mTitle = getString(R.string.title_section1);
-			break;
-		case 2:
-			mTitle = getString(R.string.title_section2);
-			break;
-		case 3:
-			mTitle = getString(R.string.title_section3);
-			break;
-		}
-	}
-
-	public void restoreActionBar() {
-		ActionBar actionBar = getSupportActionBar();
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-		actionBar.setDisplayShowTitleEnabled(true);
-		actionBar.setTitle(mTitle);
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		if (!mNavigationDrawerFragment.isDrawerOpen()) {
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		if (!this.mNavigationDrawerFragment.isDrawerOpen()) {
 			// Only show items in the action bar relevant to this screen
 			// if the drawer is not showing. Otherwise, let the drawer
 			// decide what to show in the action bar.
-			getMenuInflater().inflate(R.menu.main, menu);
-			restoreActionBar();
+			this.getMenuInflater().inflate(R.menu.main, menu);
+			this.restoreActionBar();
 			return true;
 		}
 		return super.onCreateOptionsMenu(menu);
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
+	public void onNavigationDrawerItemSelected(final int position) {
+		// update the main content by replacing fragments
+		final FragmentManager fragmentManager = this.getSupportFragmentManager();
+		final FragmentTransaction ft = fragmentManager.beginTransaction();
+		Fragment newFrag;
+
+		switch (position) {
+		case 0:
+			newFrag = ShoppingListFragment.newInstance();
+			break;
+		case 1:
+			newFrag = RubidiumFragment.newInstance(2);
+			break;
+		case 2:
+			newFrag = RubidiumFragment.newInstance(3);
+			break;
+		default:
+			newFrag = RubidiumFragment.newInstance(1);
+			break;
+		}
+		ft.replace(R.id.container, newFrag);
+		ft.commit();
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(final MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
+		final int id = item.getItemId();
 		if (id == R.id.action_settings) {
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	public void onSectionAttached(final int number) {
+		switch (number) {
+		case 1:
+			this.mTitle = this.getString(R.string.title_section1);
+			break;
+		case 2:
+			this.mTitle = this.getString(R.string.title_section2);
+			break;
+		case 3:
+			this.mTitle = this.getString(R.string.title_section3);
+			break;
+		}
+	}
+
+	public void restoreActionBar() {
+		final ActionBar actionBar = this.getSupportActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		actionBar.setDisplayShowTitleEnabled(true);
+		actionBar.setTitle(this.mTitle);
 	}
 
 }
