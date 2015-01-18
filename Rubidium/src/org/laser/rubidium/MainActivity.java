@@ -1,7 +1,10 @@
 package org.laser.rubidium;
 
+import org.laser.rubidium.fragments.MakeShoppingListFragment;
+import org.laser.rubidium.fragments.MakeShoppingListFragment.MakeShoppingListFragmentListener;
 import org.laser.rubidium.fragments.RubidiumFragment;
 import org.laser.rubidium.fragments.ShoppingListFragment;
+import org.laser.rubidium.fragments.ShoppingListFragment.ShoppingListFragmentListener;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,7 +16,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends ActionBarActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+public class MainActivity extends ActionBarActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks,
+		ShoppingListFragmentListener, MakeShoppingListFragmentListener {
 
 	/**
 	 * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -64,7 +68,7 @@ public class MainActivity extends ActionBarActivity implements NavigationDrawerF
 			newFrag = ShoppingListFragment.newInstance();
 			break;
 		case 1:
-			newFrag = RubidiumFragment.newInstance(2);
+			newFrag = MakeShoppingListFragment.newInstance();
 			break;
 		case 2:
 			newFrag = RubidiumFragment.newInstance(3);

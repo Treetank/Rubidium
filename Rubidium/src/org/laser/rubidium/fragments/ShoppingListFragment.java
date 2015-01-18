@@ -3,6 +3,7 @@ package org.laser.rubidium.fragments;
 import org.laser.rubidium.MainActivity;
 import org.laser.rubidium.contentprovider.RubidiumContentProvider;
 import org.laser.rubidium.database.ShoppingListTable;
+import org.laser.rubidium.database.objects.ShoppingListItem;
 
 import android.app.Activity;
 import android.database.Cursor;
@@ -13,10 +14,15 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
 public class ShoppingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+	public interface ShoppingListFragmentListener {
+	}
 
 	private static final String TAG = ShoppingListFragment.class.getName();
 
@@ -24,6 +30,20 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 		final ShoppingListFragment fragment = new ShoppingListFragment();
 		return fragment;
 	}
+
+	private ShoppingListFragmentListener listener;
+
+	private final OnItemLongClickListener editItemListener = new OnItemLongClickListener() {
+
+		@Override
+		public boolean onItemLongClick(final AdapterView<?> parent, final View view, final int position, final long id) {
+			final ShoppingListItem item = ShoppingListItem.newInstance((Cursor) ShoppingListFragment.this
+					.getListAdapter().getItem(position));
+			Toast.makeText(ShoppingListFragment.this.getActivity(), item.getItem() + " selected long click",
+					Toast.LENGTH_LONG).show();
+			return true;
+		}
+	};
 
 	private SimpleCursorAdapter adapter;
 
@@ -49,27 +69,40 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 		 * ArrayAdapter<String>(this.getActivity(), android.R.layout.simple_list_item_1, values); this.setListAdapter(adapter);
 		 */
 		this.fillData();
+		this.getListView().setOnItemLongClickListener(this.editItemListener);
 	}
 
 	@Override
 	public void onAttach(final Activity activity) {
 		super.onAttach(activity);
+		if (activity instanceof ShoppingListFragmentListener) {
+			this.listener = (ShoppingListFragmentListener) activity;
+		} else {
+			throw new ClassCastException(activity.toString()
+					+ " must implement ShoppingListFragment.ShoppingListFragmentListener");
+		}
 		((MainActivity) activity).onSectionAttached(1);
 
 	}
 
 	@Override
 	public Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
-		final String[] projection = { ShoppingListTable.COLUMN_ID, ShoppingListTable.COLUMN_ITEM_NAME };
+		final String[] projection = ShoppingListTable.ALL_COLUMNS;
 		final CursorLoader cl = new CursorLoader(this.getActivity(), RubidiumContentProvider.CONTENT_URI, projection,
 				null, null, null);
 		return cl;
 	}
 
 	@Override
+	public void onDetach() {
+		super.onDetach();
+		this.listener = null;
+	}
+
+	@Override
 	public void onListItemClick(final ListView l, final View v, final int position, final long id) {
-		final String item = (String) this.getListAdapter().getItem(position);
-		Toast.makeText(this.getActivity(), item + " selected", Toast.LENGTH_LONG).show();
+		final ShoppingListItem item = ShoppingListItem.newInstance((Cursor) this.getListAdapter().getItem(position));
+		Toast.makeText(this.getActivity(), item.getItem() + " selected", Toast.LENGTH_LONG).show();
 	}
 
 	@Override
@@ -81,5 +114,4 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data) {
 		this.adapter.swapCursor(data);
 	}
-
 }

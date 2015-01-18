@@ -11,6 +11,8 @@ public class ShoppingListTable {
 	public static final String COLUMN_STORE_NAME = "store";
 	public static final String COLUMN_PRICE = "price";
 
+	public static final String[] ALL_COLUMNS = { COLUMN_ID, COLUMN_ITEM_NAME, COLUMN_STORE_NAME, COLUMN_PRICE };
+
 	private static final String DATABASE_CREATE = "CREATE TABLE " + TABLE_NAME + "( " + COLUMN_ITEM_NAME
 			+ " TEXT NOT NULL, " + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + COLUMN_STORE_NAME
 			+ " TEXT NOT NULL," + COLUMN_PRICE + " REAL NOT NULL" + ");";
