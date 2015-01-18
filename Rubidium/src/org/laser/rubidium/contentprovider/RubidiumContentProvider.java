@@ -38,8 +38,7 @@ public class RubidiumContentProvider extends ContentProvider {
 	}
 
 	private void checkColumns(final String[] projection) {
-		final String[] available = { ShoppingListTable.COLUMN_ID, ShoppingListTable.COLUMN_ITEM_NAME,
-				ShoppingListTable.COLUMN_PRICE, ShoppingListTable.COLUMN_STORE_NAME };
+		final String[] available = ShoppingListTable.ALL_COLUMNS;
 		if (projection != null) {
 			final HashSet<String> rc = new HashSet<String>(Arrays.asList(projection));
 			final HashSet<String> ac = new HashSet<String>(Arrays.asList(available));

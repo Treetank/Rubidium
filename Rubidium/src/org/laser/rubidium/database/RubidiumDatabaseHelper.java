@@ -7,7 +7,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class RubidiumDatabaseHelper extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "rubidium.db";
-	private static final int DATABASE_VERSION = 5;
+	private static final int DATABASE_VERSION = 6;
+
+	public static final String DB_TRUE = "1";
+	public static final String DB_FALSE = "0";
 
 	public RubidiumDatabaseHelper(final Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);

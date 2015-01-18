@@ -6,6 +6,7 @@ import java.util.List;
 import org.laser.rubidium.MainActivity;
 import org.laser.rubidium.R;
 import org.laser.rubidium.contentprovider.RubidiumContentProvider;
+import org.laser.rubidium.database.RubidiumDatabaseHelper;
 import org.laser.rubidium.database.ShoppingListTable;
 
 import android.app.Activity;
@@ -13,7 +14,11 @@ import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -21,7 +26,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 public class MakeShoppingListFragment extends Fragment {
 
@@ -50,6 +54,7 @@ public class MakeShoppingListFragment extends Fragment {
 			values.put(ShoppingListTable.COLUMN_PRICE, MakeShoppingListFragment.this.textItemPrice.getText().toString());
 			values.put(ShoppingListTable.COLUMN_STORE_NAME, MakeShoppingListFragment.this.spinStoreName
 					.getSelectedItem().toString());
+			values.put(ShoppingListTable.COLUMN_PURCHASED, RubidiumDatabaseHelper.DB_FALSE);
 
 			final Uri newUri = MakeShoppingListFragment.this.getActivity().getContentResolver()
 					.insert(RubidiumContentProvider.CONTENT_URI, values);
@@ -57,7 +62,7 @@ public class MakeShoppingListFragment extends Fragment {
 			MakeShoppingListFragment.this.textItemName.setText("");
 			MakeShoppingListFragment.this.textItemPrice.setText("");
 
-			Toast.makeText(MakeShoppingListFragment.this.getActivity(), newUri.toString(), Toast.LENGTH_LONG).show();
+			MakeShoppingListFragment.this.textItemName.requestFocus();
 		}
 
 	};
@@ -90,6 +95,17 @@ public class MakeShoppingListFragment extends Fragment {
 	}
 
 	@Override
+	public void onCreate(final Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		this.setHasOptionsMenu(true);
+	}
+
+	@Override
+	public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
+		inflater.inflate(R.menu.make_shopping_list, menu);
+	}
+
+	@Override
 	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.fragment_make_shopping_list, container, false);
 		this.linkUI(view);
@@ -100,6 +116,14 @@ public class MakeShoppingListFragment extends Fragment {
 	public void onDetach() {
 		super.onDetach();
 		this.listener = null;
+	}
+
+	@Override
+	public void onPrepareOptionsMenu(final Menu menu) {
+		final boolean drawerOpen = ((DrawerLayout) this.getActivity().findViewById(R.id.drawer_layout))
+				.isDrawerOpen(GravityCompat.START);
+		menu.findItem(R.id.action_clear_info).setVisible(!drawerOpen);
+		menu.findItem(R.id.action_add_new_store).setVisible(!drawerOpen);
 	}
 
 	private void populateStoreSpinner() {

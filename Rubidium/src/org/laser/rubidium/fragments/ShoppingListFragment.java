@@ -1,18 +1,27 @@
 package org.laser.rubidium.fragments;
 
 import org.laser.rubidium.MainActivity;
+import org.laser.rubidium.R;
 import org.laser.rubidium.contentprovider.RubidiumContentProvider;
+import org.laser.rubidium.database.RubidiumDatabaseHelper;
 import org.laser.rubidium.database.ShoppingListTable;
 import org.laser.rubidium.database.objects.ShoppingListItem;
+import org.laser.rubidium.tools.GroceryListAdapter;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -39,24 +48,32 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 		public boolean onItemLongClick(final AdapterView<?> parent, final View view, final int position, final long id) {
 			final ShoppingListItem item = ShoppingListItem.newInstance((Cursor) ShoppingListFragment.this
 					.getListAdapter().getItem(position));
-			Toast.makeText(ShoppingListFragment.this.getActivity(), item.getItem() + " selected long click",
-					Toast.LENGTH_LONG).show();
+			final ContentValues cv = new ContentValues();
+			if (item.isPurchased()) {
+				cv.put(ShoppingListTable.COLUMN_PURCHASED, RubidiumDatabaseHelper.DB_FALSE);
+			} else {
+				cv.put(ShoppingListTable.COLUMN_PURCHASED, RubidiumDatabaseHelper.DB_TRUE);
+			}
+			ShoppingListFragment.this.getActivity().getContentResolver()
+					.update(Uri.parse(RubidiumContentProvider.CONTENT_URI + "/" + item.getId()), cv, null, null);
 			return true;
 		}
 	};
 
-	private SimpleCursorAdapter adapter;
+	private GroceryListAdapter adapter;
 
 	public ShoppingListFragment() {
 	}
 
-	private void fillData() {
-		final String[] from = new String[] { ShoppingListTable.COLUMN_ITEM_NAME };
-		final int[] to = new int[] { android.R.id.text1 };
+	private void deletePurchasedItems() {
+		final String where = ShoppingListTable.COLUMN_PURCHASED + " = ?";
+		final String[] selectionArgs = { RubidiumDatabaseHelper.DB_TRUE };
+		this.getActivity().getContentResolver().delete(RubidiumContentProvider.CONTENT_URI, where, selectionArgs);
+	}
 
+	private void fillData() {
 		this.getLoaderManager().initLoader(0, null, this);
-		this.adapter = new SimpleCursorAdapter(this.getActivity(), android.R.layout.simple_list_item_1, null, from, to,
-				0);
+		this.adapter = new GroceryListAdapter(this.getActivity(), null, 0);
 
 		this.setListAdapter(this.adapter);
 	}
@@ -64,10 +81,6 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 	@Override
 	public void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		/*
-		 * final String[] values = new String[] { "one", "two", "three", "four" }; final ArrayAdapter<String> adapter = new
-		 * ArrayAdapter<String>(this.getActivity(), android.R.layout.simple_list_item_1, values); this.setListAdapter(adapter);
-		 */
 		this.fillData();
 		this.getListView().setOnItemLongClickListener(this.editItemListener);
 	}
@@ -86,11 +99,22 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 	}
 
 	@Override
+	public void onCreate(final Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		this.setHasOptionsMenu(true);
+	}
+
+	@Override
 	public Loader<Cursor> onCreateLoader(final int arg0, final Bundle arg1) {
 		final String[] projection = ShoppingListTable.ALL_COLUMNS;
 		final CursorLoader cl = new CursorLoader(this.getActivity(), RubidiumContentProvider.CONTENT_URI, projection,
 				null, null, null);
 		return cl;
+	}
+
+	@Override
+	public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
+		inflater.inflate(R.menu.shopping_list, menu);
 	}
 
 	@Override
@@ -102,7 +126,7 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 	@Override
 	public void onListItemClick(final ListView l, final View v, final int position, final long id) {
 		final ShoppingListItem item = ShoppingListItem.newInstance((Cursor) this.getListAdapter().getItem(position));
-		Toast.makeText(this.getActivity(), item.getItem() + " selected", Toast.LENGTH_LONG).show();
+		Toast.makeText(this.getActivity(), item.getItem() + " selected", Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -113,5 +137,33 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 	@Override
 	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data) {
 		this.adapter.swapCursor(data);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(final MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.action_clear_purchased:
+			this.deletePurchasedItems();
+			return true;
+		case R.id.action_unmark_all:
+			this.setAllItemsUnpurchased();
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	@Override
+	public void onPrepareOptionsMenu(final Menu menu) {
+		final boolean drawerOpen = ((DrawerLayout) this.getActivity().findViewById(R.id.drawer_layout))
+				.isDrawerOpen(GravityCompat.START);
+		menu.findItem(R.id.action_clear_purchased).setVisible(!drawerOpen);
+		menu.findItem(R.id.action_unmark_all).setVisible(!drawerOpen);
+	}
+
+	private void setAllItemsUnpurchased() {
+		final ContentValues cv = new ContentValues();
+		cv.put(ShoppingListTable.COLUMN_PURCHASED, RubidiumDatabaseHelper.DB_FALSE);
+		this.getActivity().getContentResolver().update(RubidiumContentProvider.CONTENT_URI, cv, null, null);
 	}
 }
