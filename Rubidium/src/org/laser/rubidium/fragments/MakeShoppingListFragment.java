@@ -16,6 +16,8 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -103,6 +105,8 @@ public class MakeShoppingListFragment extends Fragment {
 	@Override
 	public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
 		inflater.inflate(R.menu.make_shopping_list, menu);
+		this.restoreActionBar();
+		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	@Override
@@ -140,5 +144,10 @@ public class MakeShoppingListFragment extends Fragment {
 		this.spinStoreName.setAdapter(dataAdapter);
 
 		this.spinStoreName.setSelection(0);
+	}
+
+	private void restoreActionBar() {
+		final ActionBar actionbar = ((ActionBarActivity) this.getActivity()).getSupportActionBar();
+		actionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
 	}
 }

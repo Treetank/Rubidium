@@ -1,5 +1,8 @@
 package org.laser.rubidium.fragments;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.laser.rubidium.MainActivity;
 import org.laser.rubidium.R;
 import org.laser.rubidium.contentprovider.RubidiumContentProvider;
@@ -19,16 +22,21 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
-public class ShoppingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class ShoppingListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor>,
+		ActionBar.OnNavigationListener {
 
 	public interface ShoppingListFragmentListener {
 	}
@@ -60,9 +68,17 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 		}
 	};
 
-	private GroceryListAdapter adapter;
+	private GroceryListAdapter listAdapter;
+	private SpinnerAdapter spinnerAdapter;
 
 	public ShoppingListFragment() {
+	}
+
+	private void addNavBar() {
+		final ActionBar actionbar = ((ActionBarActivity) this.getActivity()).getSupportActionBar();
+		actionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+		this.fillNavSpinner();
+		actionbar.setListNavigationCallbacks(this.spinnerAdapter, this);
 	}
 
 	private void deletePurchasedItems() {
@@ -73,9 +89,17 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 
 	private void fillData() {
 		this.getLoaderManager().initLoader(0, null, this);
-		this.adapter = new GroceryListAdapter(this.getActivity(), null, 0);
+		this.listAdapter = new GroceryListAdapter(this.getActivity(), null, 0);
 
-		this.setListAdapter(this.adapter);
+		this.setListAdapter(this.listAdapter);
+	}
+
+	private void fillNavSpinner() {
+		final List<String> list = new ArrayList<String>();
+		list.add("Walmart");
+		list.add("Costco");
+
+		this.spinnerAdapter = new ArrayAdapter<String>(this.getActivity(), R.layout.shopping_list_nav_spinner, list);
 	}
 
 	@Override
@@ -115,6 +139,7 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 	@Override
 	public void onCreateOptionsMenu(final Menu menu, final MenuInflater inflater) {
 		inflater.inflate(R.menu.shopping_list, menu);
+		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	@Override
@@ -131,12 +156,18 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 
 	@Override
 	public void onLoaderReset(final Loader<Cursor> loader) {
-		this.adapter.swapCursor(null);
+		this.listAdapter.swapCursor(null);
 	}
 
 	@Override
 	public void onLoadFinished(final Loader<Cursor> loader, final Cursor data) {
-		this.adapter.swapCursor(data);
+		this.listAdapter.swapCursor(data);
+	}
+
+	@Override
+	public boolean onNavigationItemSelected(final int arg0, final long arg1) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	@Override
@@ -155,10 +186,17 @@ public class ShoppingListFragment extends ListFragment implements LoaderManager.
 
 	@Override
 	public void onPrepareOptionsMenu(final Menu menu) {
+		final ActionBar actionbar = ((ActionBarActivity) this.getActivity()).getSupportActionBar();
+
 		final boolean drawerOpen = ((DrawerLayout) this.getActivity().findViewById(R.id.drawer_layout))
 				.isDrawerOpen(GravityCompat.START);
 		menu.findItem(R.id.action_clear_purchased).setVisible(!drawerOpen);
 		menu.findItem(R.id.action_unmark_all).setVisible(!drawerOpen);
+		if (drawerOpen) {
+			actionbar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+		} else {
+			this.addNavBar();
+		}
 	}
 
 	private void setAllItemsUnpurchased() {
